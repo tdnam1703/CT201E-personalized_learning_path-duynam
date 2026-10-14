@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1) #kiểm tra kiểu dữ liệu cho các lời gọi hàm
+declare(strict_types=1);
 
 namespace src\Exceptions; #xác định class ở vị trí nào
 

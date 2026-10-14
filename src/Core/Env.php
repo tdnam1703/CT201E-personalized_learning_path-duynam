@@ -57,7 +57,11 @@ final class Env #không được kế thừa
         string $key,
         mixed $default = null
     ): mixed {
-        $value = self::$vars[$key] ?? getenv($key); #lấy biến môi trường từ system
+        $value = getenv($key);
+
+        if ($value === false) {
+            $value = self::$vars[$key] ?? null;
+        }
 
         if ($value === false || $value === null) {
             return $default;

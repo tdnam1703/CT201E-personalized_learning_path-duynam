@@ -5,7 +5,7 @@ namespace src\Exceptions;
 
 final class ValidationException extends HttpException
 {
-    public function __contruct (
+    public function __construct (
         #một trường trong mảng có thể chứa nhiều lỗi
         array $error,
         string $message = 'Dữ liệu không hợp lệ.'

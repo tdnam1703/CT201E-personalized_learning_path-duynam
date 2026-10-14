@@ -15,11 +15,21 @@ return [
     ),
     
     'name' => (string) Env::get (
+        'DB_NAME',
+        ''
+    ),
+
+    'user' => (string) Env::get (
         'DB_USER',
         'root'
     ),
 
     'pass' => (string) Env::get (
+        'DB_PASSWORD',
+        ''
+    ),
+
+    'charset' => (string) Env::get (
         'DB_CHARSET',
         'utf8mb4'
     ),

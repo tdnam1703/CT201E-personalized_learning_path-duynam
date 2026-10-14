@@ -29,16 +29,21 @@ final class Config
 
         #nếu file cấu hình chưa được cache
         if (!array_key_exists($file, self::$cache)) {
+            if (!defined('BASE_PATH')) {
+                throw new \RuntimeException('BASE_PATH chưa được định nghĩa.');
+            }
+
             $path = BASE_PATH . "/config/{$file}.php";
 
-            if (!array_key_exists($file, self::$cache)) {
+            if (!is_file($path)) {
                 throw new \RuntimeException (
-                    $path = BASE_PATH . "/config/{$file}.php không tồn tại."
+                    "File cấu hình {$file}.php không tồn tại."
                 );
             }
-            
+
             $config = require $path;
-            if (!is_file($path)) {
+
+            if (!is_array($config)) {
                 throw new \RuntimeException (
                     "File cấu hình {$file}.php phải trả về một mảng."
                 );

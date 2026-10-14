@@ -92,6 +92,7 @@ CREATE TABLE goal_phases (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE (goal_id, order_no),
+    UNIQUE (goal_id, id),
     FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
 );
 
@@ -114,7 +115,7 @@ CREATE TABLE tasks (
     KEY (goal_id, status),
     KEY (status, due_date),
     FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE,
-    FOREIGN KEY (phase_id) REFERENCES goal_phases(id) ON DELETE CASCADE
+    FOREIGN KEY (goal_id, phase_id) REFERENCES goal_phases(goal_id, id) ON DELETE CASCADE
 );
 
 CREATE TABLE study_sessions (
@@ -215,7 +216,7 @@ CREATE TABLE schedule_events ( -- sự kiện
     FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE SET NULL
 );
 
-CREATE TABLE roadmap_sugges ( -- đề xuất điều chỉnh
+CREATE TABLE roadmap_suggestions ( -- đề xuất điều chỉnh
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
     goal_id BIGINT UNSIGNED NOT NULL,
@@ -299,17 +300,24 @@ CREATE TRIGGER trg_tasks_bi BEFORE INSERT ON tasks FOR EACH ROW
 BEGIN
     SET NEW.progress_percent = LEAST(NEW.progress_percent, 100); -- giới hạn tiến độ nhiệm vụ ở mức 100%
     IF NEW.status = 'DONE' THEN
+        SET NEW.progress_percent = 100;
         SET NEW.completed_at = COALESCE(NEW.completed_at, NOW()); -- xong thì giữ nguyên thời điểm complete, chưa thì update tiếp
+    ELSE
+        SET NEW.completed_at = NULL;
     END IF;
 END$$
 
 CREATE TRIGGER trg_tasks_bu BEFORE UPDATE ON tasks FOR EACH ROW
 BEGIN
     SET NEW.progress_percent = LEAST(NEW.progress_percent, 100);
-    IF NEW.status = 'DONE' AND OLD.status <> 'DONE' THEN -- Trạng thái mới DONE thì cập nhật time hoàn thành, đẩy tiến độ lên 100%
-        SET NEW.completed_at = NOW();
+    IF NEW.status = 'DONE' THEN
         SET NEW.progress_percent = 100;
-    ELSEIF NEW.status <> 'DONE' AND OLD.status = 'DONE' THEN -- Từ DONE chuyển sang trạng thái khác thì xóa time hoàn thành
+        IF OLD.status <> 'DONE' THEN -- Chuyển sang DONE thì lưu thời điểm hoàn thành.
+            SET NEW.completed_at = COALESCE(NEW.completed_at, NOW());
+        ELSEIF NEW.completed_at IS NULL THEN
+            SET NEW.completed_at = NOW();
+        END IF;
+    ELSEIF OLD.status = 'DONE' THEN -- Bỏ trạng thái DONE thì xóa thời điểm hoàn thành.
         SET NEW.completed_at = NULL;
     END IF;
 END$$
