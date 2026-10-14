@@ -57,21 +57,31 @@ final class Env #không được kế thừa
         string $key,
         mixed $default = null
     ): mixed {
-        $value = getenv($key); #lấy biến môi trường từ system
+        $value = self::$vars[$key] ?? getenv($key); #lấy biến môi trường từ system
 
-        #nếu không có thì đọc trong mảng $vars
-        if ($value === false) {
-            $value = self::$vars[$key] ?? null;
-        }
-        
         if ($value === false || $value === null) {
             return $default;
         }
-        #chuyển $value về kiểu boolean
-        return match (strtolower((string) $value)) {
-            'true' => true,
-            'false' => false,
-            default => $value,
+        return $value;
+    }
+
+    public static function bool (
+        string $key,
+        bool $default = false
+    ): bool {
+        $value = self::get($key, null);
+        if ($value === null) {
+            return $default;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return match (strtolower(trim((string) $value))) {
+            'true', '1', 'yes', 'on' => true,
+            'false', '0', 'no', 'off' => false,
+            default => $default,
         };
     }
 }
