@@ -11,6 +11,14 @@
     <a class="brand" href="<?= url('/') ?>">📚 Lộ trình học tập</a>
     <nav>
         <?php if (SessionHelper::isLoggedIn()): ?>
+            <a href="<?= url('/dashboard') ?>">Tổng quan</a>
+            <a href="<?= url('/goals') ?>">Mục tiêu</a>
+            <a href="<?= url('/schedule') ?>">Lịch</a>
+            <a href="<?= url('/study') ?>">Học tập</a>
+            <a href="<?= url('/reminders') ?>">Nhắc nhở</a>
+            <a href="<?= url('/suggestions') ?>">Gợi ý</a>
+            <?php $unread = (new NotificationModel())->unreadCount((int) SessionHelper::userId()); ?>
+            <a href="<?= url('/notifications') ?>" class="bell" title="Thông báo">🔔<?php if ($unread > 0): ?><span class="badge-count"><?= $unread > 99 ? '99+' : $unread ?></span><?php endif; ?></a>
             <span>Xin chào, <?= e(SessionHelper::get('user_name')) ?></span>
             <form method="post" action="<?= url('/logout') ?>" class="inline-form">
                 <?= csrf_field() ?>

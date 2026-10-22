@@ -20,6 +20,15 @@ spl_autoload_register(function (string $class): void {
 
 SessionHelper::start();
 
+// Sinh thông báo (lời nhắc đến giờ, nhiệm vụ quá hạn / sắp đến hạn), tối đa 1 lần/phút
+if (SessionHelper::isLoggedIn()) {
+    try {
+        (new NotificationModel())->generate((int) SessionHelper::userId());
+    } catch (Throwable $e) {
+        error_log('[Notify] ' . $e->getMessage()); // lỗi thông báo không được làm hỏng trang
+    }
+}
+
 $router = new Router();
 require BASE_PATH . '/routes/web.php';
 $router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
